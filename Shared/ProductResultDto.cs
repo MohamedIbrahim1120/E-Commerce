@@ -18,7 +18,6 @@ namespace Shared
 
         public decimal Price { get; set; }
 
-
         public string BrandName { get; set; } 
 
 

@@ -19,19 +19,22 @@ namespace Persistence.Repositories
             _context = context;
         }
 
+        #region Demo01
         public async Task<IEnumerable<TEntity>> GetAllAsync(bool trackChanges = false)
         {
-            if(typeof(TEntity) == typeof(Product))
+            if (typeof(TEntity) == typeof(Product))
             {
                 return trackChanges ?
-         await _context.products.Include(p => p.ProductBrand).Include(p => p.ProductType).ToListAsync() as IEnumerable<TEntity>
-       : await _context.products.Include(p => p.ProductBrand).Include(p => p.ProductType).AsNoTracking().ToListAsync() as IEnumerable<TEntity>;
+                          await _context.products.Include(p => p.ProductBrand).Include(p => p.ProductType).ToListAsync() as IEnumerable<TEntity>
+                        : await _context.products.Include(p => p.ProductBrand).Include(p => p.ProductType).AsNoTracking().ToListAsync() as IEnumerable<TEntity>;
             }
 
             return trackChanges ?
                 await _context.Set<TEntity>().ToListAsync() :
                 await _context.Set<TEntity>().AsNoTracking().ToListAsync();
         }
+
+        #endregion
 
         public async Task<TEntity> GetAsync(TKey id)
         {
@@ -58,6 +61,27 @@ namespace Persistence.Repositories
             _context.Remove(entity);
         }
 
-    
+
+
+        public async Task<IEnumerable<TEntity>> GetAllAsync(ISpecification<TEntity, TKey> spec, bool trackChanges = false)
+        {
+           return await ApllySepcifications(spec).ToListAsync();
+        }
+
+        public async Task<TEntity?> GetAsync(ISpecification<TEntity, TKey> spec)
+        {
+           return await ApllySepcifications(spec).FirstOrDefaultAsync();
+        }
+
+        private IQueryable<TEntity> ApllySepcifications(ISpecification<TEntity,TKey> spec)
+        {
+            return SpecificationEvaluator.GetQuery(_context.Set<TEntity>(), spec);
+        }
+
+        public async Task<int> CountAsyn(ISpecification<TEntity, TKey> spec)
+        {
+            return await ApllySepcifications(spec).CountAsync();
+        }
+
     } 
 }

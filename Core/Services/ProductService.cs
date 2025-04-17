@@ -2,9 +2,11 @@
 using Domain.Contracts;
 using Domain.Models;
 using Services.Abstractions;
+using Services.Specifcations;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,19 +24,29 @@ namespace Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<ProductResultDto>> GetAllProductAsync()
+        public async Task<PaginationResponse<ProductResultDto>> GetAllProductAsync(ProductSpecificationParamter SpecParams)
         {
+            var spec = new ProductWithBrandsAndTypeSrpecification(SpecParams);
+
+
             // Get All Product From Throught ProductRepository
-           var produt = await _unitOfWord.GetRepository<Product,int>().GetAllAsync();
+           var produt = await _unitOfWord.GetRepository<Product,int>().GetAllAsync(spec);
+
+            var specCount = new ProductWithCountSpecification(SpecParams);
+
+            var count = await _unitOfWord.GetRepository<Product,int>().CountAsyn(specCount);
             // Mapping IEnumerable<Product> To <IEnumerable<ProductResultDto>>
            var result = _mapper.Map<IEnumerable<ProductResultDto>>(produt);
-            return result;
-        }
 
+
+            return new PaginationResponse<ProductResultDto>(SpecParams.PageIndex,SpecParams.PageSize, count, result);
+        }
 
         public async Task<ProductResultDto?> GetProductByIdAsync(int id)
         {
-           var product = await _unitOfWord.GetRepository<Product,int>().GetAsync(id);
+            var spec = new ProductWithBrandsAndTypeSrpecification(id);
+
+           var product = await _unitOfWord.GetRepository<Product,int>().GetAsync(spec);
             if (product == null) return null;
 
           var result = _mapper.Map<ProductResultDto>(product);
