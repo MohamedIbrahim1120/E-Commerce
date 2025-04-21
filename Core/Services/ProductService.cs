@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Domain.Contracts;
+using Domain.Exceptions;
 using Domain.Models;
 using Services.Abstractions;
 using Services.Specifcations;
@@ -32,11 +33,12 @@ namespace Services
             // Get All Product From Throught ProductRepository
            var produt = await _unitOfWord.GetRepository<Product,int>().GetAllAsync(spec);
 
-            var specCount = new ProductWithCountSpecification(SpecParams);
-
-            var count = await _unitOfWord.GetRepository<Product,int>().CountAsyn(specCount);
-            // Mapping IEnumerable<Product> To <IEnumerable<ProductResultDto>>
            var result = _mapper.Map<IEnumerable<ProductResultDto>>(produt);
+
+            var totalSpec = new ProductWithCountSpecification(SpecParams);
+
+            var count = await _unitOfWord.GetRepository<Product,int>().CountAsyn(totalSpec);
+            // Mapping IEnumerable<Product> To <IEnumerable<ProductResultDto>>
 
 
             return new PaginationResponse<ProductResultDto>(SpecParams.PageIndex,SpecParams.PageSize, count, result);
@@ -47,7 +49,7 @@ namespace Services
             var spec = new ProductWithBrandsAndTypeSrpecification(id);
 
            var product = await _unitOfWord.GetRepository<Product,int>().GetAsync(spec);
-            if (product == null) return null;
+            if (product == null) throw new ProductNotFoundException(id);
 
           var result = _mapper.Map<ProductResultDto>(product);
             return result;
