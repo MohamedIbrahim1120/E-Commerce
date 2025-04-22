@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Persistence.Data;
+using Persistence.Identity;
 using Persistence.Repositories;
 using StackExchange.Redis;
 using System;
@@ -20,7 +21,7 @@ namespace Persistence
 
             services.AddDbContext<StoreDbContext>(op =>
             {
-                op.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+                op.UseSqlServer(configuration.GetConnectionString("IdentityConnection"));
             });
             services.AddScoped<IDbInitializer, DbInitializer>(); // Allow DI 
             services.AddScoped<IUnitOfWord, UintOfWord>();
@@ -29,6 +30,11 @@ namespace Persistence
                 return ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis")!);
             });
             services.AddScoped<IBasketRepository, BasketRepository>();
+            services.AddScoped<ICacheRepository, CacheRepository>();
+            services.AddDbContext<StoreIdentityDbContext>(op =>
+            {
+                op.UseSqlServer(configuration.GetConnectionString("IdentityConnection"));
+            });
             return services;
         }
 
