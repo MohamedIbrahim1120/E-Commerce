@@ -1,4 +1,4 @@
-
+ 
 using Domain.Contracts;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;

@@ -1,6 +1,9 @@
 ﻿using Domain.Contracts;
+using Domain.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Persistence;
+using Persistence.Identity;
 using Services;
 using Shared.ErrorsModels;
 using Store.APi.MiddlesWares;
@@ -18,6 +21,7 @@ namespace Store.APi.Extensions
            services.ConfigureServices();
            services.AddInfrastructureServices(configuration); 
 
+            services.AddIentityServices();
 
             services.AddApplicationServices();
 
@@ -97,8 +101,7 @@ namespace Store.APi.Extensions
             using var scope = app.Services.CreateScope();
             var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>(); // Ask CLR Create Object From DbInitializer 
             await dbInitializer.InitializeAsync();
-
-
+            await dbInitializer.InitializeIdentityAsync();
 
             return app;
         }
@@ -108,6 +111,14 @@ namespace Store.APi.Extensions
 
             app.UseMiddleware<GlobalErrorHandlingMiddlewares>();
             return app;
+        }
+
+        private static IServiceCollection AddIentityServices(this IServiceCollection services)
+        {
+            services.AddIdentity<AppUser, IdentityRole>()
+                    .AddEntityFrameworkStores<StoreIdentityDbContext>();
+
+            return services;
         }
 
     }

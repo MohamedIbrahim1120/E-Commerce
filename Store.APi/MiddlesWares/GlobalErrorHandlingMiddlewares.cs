@@ -21,7 +21,7 @@ namespace Store.APi.MiddlesWares
                 await _next.Invoke(context);
                 if(context.Response.StatusCode == StatusCodes.Status404NotFound)
                 {
-                    await HandlingNotFoundEndPointAsyn(context);
+                    await HandlingNotFoundEndPointAsync(context);
                 }
             }
             catch (Exception ex)
@@ -54,6 +54,8 @@ namespace Store.APi.MiddlesWares
             {
                 NotFoundException => StatusCodes.Status404NotFound,
                 BadRequestException => StatusCodes.Status400BadRequest,
+                ValidationException => HandlingValidationAsync((ValidationException)ex,response),
+                UnAuthorizeException => StatusCodes.Status401Unauthorized,
                 _ => StatusCodes.Status500InternalServerError
             };
 
@@ -63,7 +65,7 @@ namespace Store.APi.MiddlesWares
             await context.Response.WriteAsJsonAsync(response);
         }
 
-        private static async Task HandlingNotFoundEndPointAsyn(HttpContext context)
+        private static async Task HandlingNotFoundEndPointAsync(HttpContext context)
         {
             context.Response.ContentType = "application/json";
             var response = new ErrorDetails()
@@ -74,6 +76,10 @@ namespace Store.APi.MiddlesWares
             await context.Response.WriteAsJsonAsync(response);
         }
 
-
+        private static int HandlingValidationAsync(ValidationException ex,ErrorDetails response)
+        {
+           response.Errors = ex.Errors;
+            return StatusCodes.Status400BadRequest;
+        }
     }
 }
