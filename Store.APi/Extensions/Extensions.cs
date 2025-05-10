@@ -1,12 +1,17 @@
 ﻿using Domain.Contracts;
 using Domain.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Persistence;
 using Persistence.Identity;
 using Services;
+using Shared;
 using Shared.ErrorsModels;
 using Store.APi.MiddlesWares;
+using System.Text;
 
 namespace Store.APi.Extensions
 {
@@ -18,12 +23,16 @@ namespace Store.APi.Extensions
             services.AddBulitInServices();
             services.AddSwaggerServices();
 
-           services.ConfigureServices();
+
+            services.ConfigureServices();
            services.AddInfrastructureServices(configuration); 
+
 
             services.AddIentityServices();
 
-            services.AddApplicationServices();
+            services.AddApplicationServices(configuration);
+            services.configureJwtServices(configuration);
+
 
             return services;
         }
@@ -31,8 +40,6 @@ namespace Store.APi.Extensions
         private static IServiceCollection AddBulitInServices(this IServiceCollection services)
         {
             services.AddControllers();
-         
-
 
             return services;
         }
@@ -85,11 +92,14 @@ namespace Store.APi.Extensions
                 app.UseSwaggerUI();
             }
 
+            app.UseStaticFiles();
+
             app.UseHttpsRedirection();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
-            app.UseStaticFiles();
 
             app.MapControllers();
 
@@ -117,6 +127,36 @@ namespace Store.APi.Extensions
         {
             services.AddIdentity<AppUser, IdentityRole>()
                     .AddEntityFrameworkStores<StoreIdentityDbContext>();
+
+            return services;
+        }
+
+        private static IServiceCollection configureJwtServices(this IServiceCollection services,IConfiguration configuration)
+        {
+
+            var jwtOptions = configuration.GetSection("JwtOptions").Get<JwtOptions>();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidAudience = jwtOptions.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
+                };
+            });
+
+
+
 
             return services;
         }

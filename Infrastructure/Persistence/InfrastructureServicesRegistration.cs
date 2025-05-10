@@ -21,7 +21,7 @@ namespace Persistence
 
             services.AddDbContext<StoreDbContext>(op =>
             {
-                op.UseSqlServer(configuration.GetConnectionString("IdentityConnection"));
+                op.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             });
             services.AddScoped<IDbInitializer, DbInitializer>(); // Allow DI 
             services.AddScoped<IUnitOfWord, UintOfWord>();

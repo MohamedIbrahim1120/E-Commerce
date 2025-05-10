@@ -28,7 +28,5 @@ namespace Presentation
             var result = await serviceManager.AuthService.RegisterAsync(registerDto);
             return Ok(result);
         }
-
-
     }
 }

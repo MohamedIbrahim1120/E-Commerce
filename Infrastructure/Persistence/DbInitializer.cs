@@ -1,6 +1,7 @@
 ﻿using Domain.Contracts;
 using Domain.Identity;
 using Domain.Models;
+using Domain.Models.OrderModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Data;
@@ -89,8 +90,6 @@ namespace Persistence
 
                 // Seeding products From Json File
 
-
-
                 if (!_context.products.Any())
                 {
                     // 1. Read All Data From products Json File as String
@@ -105,6 +104,27 @@ namespace Persistence
                     if (products is not null && products.Any())
                     {
                         await _context.products.AddRangeAsync(products);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
+
+                // Seeding products From Json File
+
+                if (!_context.DeliveryMethods.Any())
+                {
+                    // 1. Read All Data From delivery Json File as String
+                    var deliveryData = await File.ReadAllTextAsync(@"..\Infrastructure\Persistence\Data\Seeding\delivery.json");
+
+                    // 2. Transform string To C# Object [List<ProductTypes>]
+
+                    var deliveryMethods = JsonSerializer.Deserialize<List<DeliveryMethod>>(deliveryData);
+
+                    // 3. Add List<Product> To DataBase
+
+                    if (deliveryMethods is not null && deliveryMethods.Any())
+                    {
+                        await _context.DeliveryMethods.AddRangeAsync(deliveryMethods);
                         await _context.SaveChangesAsync();
                     }
                 }
