@@ -1,4 +1,5 @@
 ﻿using Shared;
+using Shared.OrderModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,24 @@ namespace Services.Abstractions
        Task<UserResultDto> LoginAsync(LoginDto loginDto);
 
         Task<UserResultDto> RegisterAsync(RegisterDto registerDto);
+
+
+        // Check Email Exists 
+
+        Task<bool> CheckEmailExistsAsync(string email);
+
+        // Get Current User
+        Task<UserResultDto> GetCurrentUserAsync(string email);
+
+
+        // Get Current User Address
+
+        Task<AddressDto> GetCurrentUserAddressAsync(string email);
+
+        // Update Current User Address
+
+        Task<AddressDto> UpdateCurrentUserAsync(AddressDto address,string email);
+
 
 
     }

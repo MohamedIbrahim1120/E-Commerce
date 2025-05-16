@@ -18,7 +18,8 @@ namespace Services
                                 ,IBasketRepository basketRepository,
                                 ICacheRepository cacheService,
                                 UserManager<AppUser> userManager,
-                                IOptions<JwtOptions> options) : IServiceManager
+                                IOptions<JwtOptions> options,
+                                IConfiguration configuration) : IServiceManager
     {
         private readonly IUnitOfWord _unitOfWord = unitOfWord;
         private readonly IMapper _mapper = mapper;
@@ -29,8 +30,10 @@ namespace Services
 
         public ICacheService CacheService { get; } = new CacheService(cacheService);
 
-        public IAuthService AuthService { get; } = new AuthService(userManager, options);
+        public IAuthService AuthService { get; } = new AuthService(mapper, userManager, options);
 
         public IOrderService OrderService { get; } = new OrderService(mapper, basketRepository, unitOfWord);
+
+        public IPaymentService paymentService { get; } = new PaymentService(configuration, mapper, basketRepository, unitOfWord);
     }
 }

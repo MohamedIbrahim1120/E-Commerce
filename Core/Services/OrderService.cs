@@ -41,8 +41,17 @@ namespace Services
             var subTotal = orderItems.Sum(i => i.Price * i.Quantity);
 
             // 5. TODO : Create Payment Initent Id ---
+
+            // check Order Exists
+            var spec = new OrderWithPaymentIntentSpecification(basket.PaymentIntentId);
+
+            var exitsOrder = await unitOfWord.GetRepository<Order, Guid>().GetAsync(spec);
+
+            if (exitsOrder is not null)
+                 unitOfWord.GetRepository<Order, Guid>().Delete(exitsOrder);
+
             // Create Order 
-            var order = new Order(userEmail, address, orderItems, deliveryMethod, subTotal, "");
+            var order = new Order(userEmail, address, orderItems, deliveryMethod, subTotal, basket.PaymentIntentId);
 
             await unitOfWord.GetRepository<Order,Guid>().AddAsync(order);
            var count = await unitOfWord.SaveChangesAsync();
